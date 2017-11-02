@@ -9,30 +9,23 @@ package osdi.locks;
 public class Semaphore {
     private final java.util.concurrent.Semaphore javaSemaphore;
 
-    public Semaphore(int initialValue, int maxValue) {
-        if(initialValue <= 0) {
-            throw new IllegalStateException("initialValue > 0");
+    public Semaphore(int initialValue) {
+        if(initialValue < 0) {
+            throw new IllegalStateException("initialValue >= 0");
         }
-        if(maxValue < initialValue || maxValue < 0) {
-            throw new IllegalStateException("maxValue > initialValue && maxValue > 0");
-        }
-        javaSemaphore = new java.util.concurrent.Semaphore(maxValue);
+        javaSemaphore = new java.util.concurrent.Semaphore(initialValue);
+
+    }
+
+    public void down() {
         try {
-            javaSemaphore.acquire(initialValue);
+            javaSemaphore.acquire(1);
         } catch (InterruptedException e) {
             throw new IllegalStateException(e);
         }
     }
 
     public void up() {
-        try {
-            javaSemaphore.acquire();
-        } catch (InterruptedException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    public void down() {
-        javaSemaphore.release();
+        javaSemaphore.release(1);
     }
 }
