@@ -14,7 +14,7 @@ public class Monitor {
 
     public interface MonitorOperations {
         void Wait();
-        void pulse();
+        void Pulse();
     }
 
     private final MonitorOperations lockObj = new MonitorOperationsImpl();
@@ -35,8 +35,8 @@ public class Monitor {
         }
 
         @Override
-        public void pulse() {
-            this.pulse();
+        public void Pulse() {
+            this.notifyAll();
         }
     }
 }
