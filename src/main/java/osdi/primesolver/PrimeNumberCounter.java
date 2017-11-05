@@ -21,7 +21,7 @@ public class PrimeNumberCounter {
     }
 
     /*
-     * you may not modify this method
+     * you may not modify the method, but you can modify the signature of the method if needed
      */
     private void startThreads(SimpleQueue<Long> valuesToCheck, SimpleQueue<Long> valuesThatArePrime) {
         Collection<Thread> threads = new ArrayList<>();
