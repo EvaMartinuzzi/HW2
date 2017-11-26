@@ -1,25 +1,53 @@
 package osdi.collections;
 
-/*
- * Modify this as you see fit. you may not use anything in java.util.concurrent.* you may only use locks from osdi.locks.*
- */
+import osdi.locks.*;
+
+import java.util.ArrayDeque;
+
 class BoundBufferImpl<T> implements SimpleQueue<T> {
     private final int bufferSize;
     private final java.util.Queue<T> queue;
+    private Monitor monitor;
+    private SpinLock lock;
 
     public BoundBufferImpl(int bufferSize) {
         this.bufferSize = bufferSize;
-        queue = new java.util.ArrayDeque<>();
+        queue = new ArrayDeque<>(bufferSize);
+        monitor = new Monitor();
+        lock = new SpinLock();
     }
 
     @Override
     public void enqueue(T item) {
-        queue.add(item);
+        while (this.queue.size() == bufferSize) {
+            monitor.sync((Monitor.MonitorOperations::Wait));
+        }
+        if (this.queue.size() >= 0) {
+            monitor.sync((Monitor.MonitorOperations::Pulse));
+        }
+        lock.lock();
+        if (item != null) {
+            queue.add(item);
+        }
+        lock.unlock();
+
     }
 
     @Override
     public T dequeue() {
-        T item = queue.remove();
+        while(queue.isEmpty()){
+            monitor.sync((Monitor.MonitorOperations::Wait));
+        }
+        if(this.queue.size() <= bufferSize){
+            monitor.sync((Monitor.MonitorOperations::Pulse));
+        }
+        lock.lock();
+        T item = null;
+        if (!queue.isEmpty()) {
+            item = queue.remove();
+        }
+        lock.unlock();
+
         return item;
     }
 }

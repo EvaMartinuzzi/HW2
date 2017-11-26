@@ -17,21 +17,36 @@ public class PrimeNumberCounter {
      * you may not modify this method
      */
     private static int getThreadCount() {
-        return Runtime.getRuntime().availableProcessors() * 4;
+        return Runtime.getRuntime().availableProcessors()*4;
     }
 
     /*
-     * you may not modify the method, but you can modify the signature of the method if needed
+     * you may not modify this method
      */
-    private void startThreads(SimpleQueue<Long> valuesToCheck, SimpleQueue<Long> valuesThatArePrime) {
+    private void startThreads(final SimpleQueue<Long> valuesToCheck, final SimpleQueue<Long> valuesThatArePrime) {
         Collection<Thread> threads = new ArrayList<>();
         int threadCount = getThreadCount();
         for(int i = 0; i < threadCount; i++) {
-            Thread t = new Thread(()->findPrimeValues(valuesToCheck, valuesThatArePrime));
+            Thread t =
+                    new Thread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            findPrimeValues(valuesToCheck, valuesThatArePrime);
+
+                        }
+                    });
             t.setDaemon(true);
             threads.add(t);
         }
-        Thread counter = new Thread(()->countPrimeValues(valuesThatArePrime));
+        Thread counter = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                countPrimeValues(valuesThatArePrime);
+
+            }
+        });
         threads.add(counter);
 
         for(Thread t : threads) {
@@ -44,14 +59,22 @@ public class PrimeNumberCounter {
      * you may modify this method
      */
     public long countPrimeNumbers(NumberRange range) {
-        SimpleQueue<Long> valuesToCheck = BoundBuffer.createBoundBufferWithSemaphores(100);
-        SimpleQueue<Long> valuesThatArePrime = BoundBuffer.createBoundBufferWithSemaphores(50);
+        SimpleQueue<Long> valuesToCheck = BoundBuffer.createBoundBufferWithSemaphores(10000);
+        SimpleQueue<Long> valuesThatArePrime = BoundBuffer.createBoundBufferWithSemaphores(10000);
 
         startThreads(valuesToCheck, valuesThatArePrime);
 
         for(Long value : range) {
             valuesToCheck.enqueue(value);
+
         }
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
 
         return currentCount;
     }
@@ -60,12 +83,23 @@ public class PrimeNumberCounter {
      * you may modify this method
      */
     private void findPrimeValues(SimpleQueue<Long> valuesToCheck, SimpleQueue<Long> valuesThatArePrime) {
+
         while(true) {
+
             Long current = valuesToCheck.dequeue();
-            if(Number.IsPrime(current)) {
-                valuesThatArePrime.enqueue(current);
+            if (current!=null){
+                if(current%1000000==0) {
+                    System.out.println(current);
+                }
+                if(Number.IsPrime(current)) {
+                    valuesThatArePrime.enqueue(current);
+                }
             }
+
+
+
         }
+
     }
 
     /*
@@ -73,10 +107,14 @@ public class PrimeNumberCounter {
      */
     private void countPrimeValues(SimpleQueue<Long> valuesThatArePrime) {
         while(true) {
-            valuesThatArePrime.dequeue();
-            currentCount += 1;
-            if(currentCount % 10000 == 0) {
-                System.out.println("have " + currentCount + " prime values");
+
+            Long current = valuesThatArePrime.dequeue();
+            if (current!=null){
+                currentCount++;
+            }
+
+            if(currentCount!=0 && currentCount % 1000000 == 0) {
+                System.out.println("There are at least " + currentCount + " prime values");
                 System.out.flush();
             }
         }
