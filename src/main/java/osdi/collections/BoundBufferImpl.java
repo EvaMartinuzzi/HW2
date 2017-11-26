@@ -2,35 +2,30 @@ package osdi.collections;
 
 import osdi.locks.*;
 
-import java.util.ArrayDeque;
-
 class BoundBufferImpl<T> implements SimpleQueue<T> {
-    private final int bufferSize;
+    private final int size;
     private final java.util.Queue<T> queue;
     private Monitor monitor;
     private SpinLock lock;
 
     public BoundBufferImpl(int bufferSize) {
-        this.bufferSize = bufferSize;
-        queue = new ArrayDeque<>(bufferSize);
+        size = bufferSize;
+        queue = new java.util.ArrayDeque<>(bufferSize);
         monitor = new Monitor();
         lock = new SpinLock();
     }
 
     @Override
     public void enqueue(T item) {
-        while (this.queue.size() == bufferSize) {
+        while (this.queue.size() == size) {
             monitor.sync((Monitor.MonitorOperations::Wait));
         }
         if (this.queue.size() >= 0) {
             monitor.sync((Monitor.MonitorOperations::Pulse));
         }
         lock.lock();
-        if (item != null) {
-            queue.add(item);
-        }
+        queue.add(item);
         lock.unlock();
-
     }
 
     @Override
@@ -38,7 +33,7 @@ class BoundBufferImpl<T> implements SimpleQueue<T> {
         while(queue.isEmpty()){
             monitor.sync((Monitor.MonitorOperations::Wait));
         }
-        if(this.queue.size() <= bufferSize){
+        if(this.queue.size() <= size){
             monitor.sync((Monitor.MonitorOperations::Pulse));
         }
         lock.lock();
@@ -47,7 +42,6 @@ class BoundBufferImpl<T> implements SimpleQueue<T> {
             item = queue.remove();
         }
         lock.unlock();
-
         return item;
     }
 }

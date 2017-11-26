@@ -6,23 +6,14 @@ import osdi.collections.SimpleQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 
-/*
- * you may not use anything in java.util.concurrent.* you may only use locks from osdi.locks.*
- */
 public class PrimeNumberCounter {
 
     private long currentCount = 0L;
 
-    /*
-     * you may not modify this method
-     */
     private static int getThreadCount() {
         return Runtime.getRuntime().availableProcessors() * 4;
     }
 
-    /*
-     * you may not modify the method, but you can modify the signature of the method if needed
-     */
     private void startThreads(SimpleQueue<Long> valuesToCheck, SimpleQueue<Long> valuesThatArePrime) {
         Collection<Thread> threads = new ArrayList<>();
         int threadCount = getThreadCount();
@@ -40,9 +31,6 @@ public class PrimeNumberCounter {
         }
     }
 
-    /*
-     * you may modify this method
-     */
     public long countPrimeNumbers(NumberRange range) {
         SimpleQueue<Long> valuesToCheck = BoundBuffer.createBoundBufferWithSemaphores(10000);
         SimpleQueue<Long> valuesThatArePrime = BoundBuffer.createBoundBufferWithSemaphores(10000);
@@ -59,9 +47,6 @@ public class PrimeNumberCounter {
         return currentCount;
     }
 
-    /*
-     * you may modify this method
-     */
     private void findPrimeValues(SimpleQueue<Long> valuesToCheck, SimpleQueue<Long> valuesThatArePrime) {
         while(true) {
             Long current = valuesToCheck.dequeue();
@@ -71,9 +56,6 @@ public class PrimeNumberCounter {
         }
     }
 
-    /*
-     * you may modify this method
-     */
     private void countPrimeValues(SimpleQueue<Long> valuesThatArePrime) {
         while(true) {
             valuesThatArePrime.dequeue();
