@@ -17,7 +17,7 @@ public class PrimeNumberCounter {
      * you may not modify this method
      */
     private static int getThreadCount() {
-        return Runtime.getRuntime().availableProcessors()*4;
+        return Runtime.getRuntime().availableProcessors() * 4;
     }
 
     /*
@@ -113,7 +113,7 @@ public class PrimeNumberCounter {
                 currentCount++;
             }
 
-            if(currentCount!=0 && currentCount % 1000000 == 0) {
+            if(currentCount!=0 && currentCount % 1000 == 0) {
                 System.out.println("There are at least " + currentCount + " prime values");
                 System.out.flush();
             }
